@@ -2,111 +2,35 @@ package main
 
 import (
 	"fmt"
-	"starter/helper"
-	"sync"
-	"time"
+	"starter/bookapp"
+	"starter/server"
 )
 
-var bookings = []UserData{}
-
-var conferenceName = "Glxymesh Conference"
-
-const ticketCount uint = 50
-
-var remainingTickets uint = 50
-
-type UserData struct {
-	firstName       string
-	lastName        string
-	email           string
-	numberOfTickets uint
-}
-
-var wg = sync.WaitGroup{}
-
 func main() {
+	var takeInput string
 
-	helper.PrintGreetingFromHelper()
-	greetUser()
-	printRemainingTickets()
+	fmt.Printf("Which app would you like to run? (bookapp, simple_server, templated_server, static_server): ")
 
-	for {
+	fmt.Scanln(&takeInput)
 
-		userData := getUserInput()
+	switch takeInput {
+	case "bookapp":
+		fmt.Println("Running bookapp...")
+		bookapp.RunBookApp()
+	case "simple_server":
+		fmt.Println("Running server...")
+		server.RunSimpleHelloWorldServer()
 
-		if userData.numberOfTickets > remainingTickets {
-			fmt.Printf("Sorry, we only have %v tickets remaining\n", remainingTickets)
-			continue
-		}
+	case "templated_server":
+		fmt.Println("Running template server...")
+		server.RunWithTemplates()
 
-		remainingTickets -= userData.numberOfTickets
-		addBooking(conferenceName, userData)
+	case "static_server":
+		fmt.Println("Running static server...")
+		server.RunStaticServer()
 
-		wg.Add(1)
-		go sendTickets(userData)
-
-		firstNames := getFirstNames()
-		fmt.Printf("Bookings: %v\n", firstNames)
-
-		printRemainingTickets()
-
-		if remainingTickets == 0 {
-			fmt.Println("Sorry, we are sold out")
-			break
-		}
+	default:
+		fmt.Println("No app selected.")
+		fmt.Println("Exiting...")
 	}
-
-	wg.Wait()
-}
-
-func greetUser() {
-	fmt.Printf("Welcome to the %v to all\n", conferenceName)
-	fmt.Println("Please get your ticket from the panel window")
-}
-
-func getFirstNames() []string {
-	firstNames := []string{}
-	for _, booking := range bookings {
-		firstNames = append(firstNames, booking.firstName)
-	}
-	return firstNames
-}
-
-func getUserInput() UserData {
-	var firstName string
-	var lastName string
-	var numberOfTickets uint
-	var email string
-
-	fmt.Print("Please enter your first name: ")
-	fmt.Scan(&firstName)
-	fmt.Print("Please enter your last name: ")
-	fmt.Scan(&lastName)
-	fmt.Print("Enter your email address:")
-	fmt.Scan(&email)
-	fmt.Print("How many tickets would you like to buy?\n")
-	fmt.Scan(&numberOfTickets)
-	return UserData{firstName, lastName, email, numberOfTickets}
-}
-
-func printRemainingTickets() {
-	fmt.Printf("We have total of %v tickets remaining out of %v tickets\n", remainingTickets, ticketCount)
-}
-
-func addBooking(conferenceName string, userData UserData) {
-	bookings = append(bookings, userData)
-	fmt.Printf("Welcome to the %v to %v, You have %v tickets.\n", conferenceName, userData.firstName, userData.numberOfTickets)
-	fmt.Println("You will receive an email with your ticket details")
-	fmt.Printf("List of bookings: %v\n", bookings)
-}
-
-func sendTickets(userData UserData) {
-	time.Sleep(50 * time.Second)
-	var message = fmt.Sprintf("Sending tickets to %v %v at %v for %v tickets", userData.firstName, userData.lastName, userData.email, userData.numberOfTickets)
-	fmt.Println("\n--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--")
-	fmt.Println("Sending tickets...")
-	fmt.Println(message)
-	fmt.Println("--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--")
-	fmt.Println()
-	wg.Done()
 }
